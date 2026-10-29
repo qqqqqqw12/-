@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}html,body{margin:0}</style>
+<title>Тест по биоэтике</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,600&display=swap">
+<style>
+/* Layout: одна узкая колонка, как бланк ответов: одно задание на экране, варианты с нумерацией 1–4, как в исходных заданиях. */
+:root{
+  --bg:#F2F6F6;
+  --surface:#FFFFFF;
+  --fg:#13262B;
+  --muted:#566A6F;
+  --line:#D3DFE0;
+  --accent:#0E6A6E;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#DCEEEE;
+  --ok:#1B7A46;
+  --ok-soft:#DDF1E5;
+  --bad:#B3321F;
+  --bad-soft:#F8E1DC;
+  --serif:"Literata",Georgia,"Times New Roman",serif;
+  --sans:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1819;--surface:#152325;--fg:#E6F0F0;--muted:#93A8AB;--line:#2A3D40;
+    --accent:#4FC1C4;--accent-ink:#06201F;--accent-soft:#17383A;
+    --ok:#5ED08C;--ok-soft:#14301F;--bad:#FF8E7A;--bad-soft:#3A1A15;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1819;--surface:#152325;--fg:#E6F0F0;--muted:#93A8AB;--line:#2A3D40;
+  --accent:#4FC1C4;--accent-ink:#06201F;--accent-soft:#17383A;
+  --ok:#5ED08C;--ok-soft:#14301F;--bad:#FF8E7A;--bad-soft:#3A1A15;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--fg);
+  font-family:var(--sans);font-size:16px;line-height:1.5;
+  padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+h1,h2,h3,p,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+button,select{font:inherit;color:inherit}
+button{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#stem:focus{outline:none}
+
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:28px}
+.brand{font-size:13px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.linkbtn{background:none;border:0;padding:8px 0;color:var(--accent);font-weight:500;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-align:left}
+.muted{color:var(--muted)}
+
+.bar{display:grid;grid-template-columns:repeat(20,1fr);gap:3px}
+.bar i{height:6px;border-radius:2px;background:var(--line)}
+.bar i.on{background:var(--accent)}
+.bar i.cur{background:var(--fg)}
+.bar i.ok{background:var(--ok)}
+.bar i.bad{background:var(--bad)}
+
+.qhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.kicker{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-variant-numeric:tabular-nums}
+.tag{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.stem{font-family:var(--serif);font-size:clamp(20px,5.2vw,24px);line-height:1.35;font-weight:600}
+.hint{color:var(--muted);font-size:15px}
+
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{
+  width:100%;display:flex;gap:14px;align-items:flex-start;text-align:left;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:10px;
+  padding:13px 14px;min-height:56px;cursor:pointer;transition:border-color .15s,background-color .15s;
+}
+.opt:hover{border-color:var(--accent)}
+.opt .num{
+  flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--serif);font-weight:600;font-size:15px;color:var(--muted);
+  border:1.5px solid var(--line);font-variant-numeric:tabular-nums;
+}
+.opt .txt{min-width:0;padding-top:2px;overflow-wrap:anywhere}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt[aria-pressed="true"] .num{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.blk{display:flex;flex-direction:column;gap:10px}
+.lab{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pairs{display:flex;flex-direction:column;gap:10px}
+.pair{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;
+}
+.pair.set{border-color:var(--accent)}
+.pair .who{min-width:0;flex:1;font-family:var(--serif);overflow-wrap:anywhere}
+.pair select{
+  flex:none;min-width:84px;min-height:44px;border:1.5px solid var(--line);border-radius:8px;
+  background:var(--bg);padding:0 10px;font-weight:600;
+}
+.ref{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.ref li{display:flex;gap:12px;align-items:flex-start}
+.ref .rn{flex:none;width:20px;font-family:var(--serif);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.ref li span:last-child{min-width:0;overflow-wrap:anywhere}
+
+.nav{display:flex;gap:10px}
+.btn{
+  flex:1;min-height:48px;padding:0 20px;border-radius:8px;border:1.5px solid var(--line);
+  background:var(--surface);font-weight:600;cursor:pointer;
+}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.4;cursor:default}
+
+.hero{display:flex;flex-direction:column;gap:16px;padding-top:8px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--serif);font-size:clamp(32px,9vw,42px);line-height:1.1;font-weight:600;text-wrap:balance}
+.lead{font-size:17px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fact{border-top:2px solid var(--fg);padding-top:8px}
+.fact b{display:block;font-family:var(--serif);font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.fact span{font-size:14px;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.cell{
+  min-height:48px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);
+  font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums;
+}
+.cell.done{background:var(--accent-soft);border-color:var(--accent)}
+@media (min-width:520px){.grid{grid-template-columns:repeat(10,1fr)}}
+
+.score{display:flex;align-items:baseline;gap:10px;font-family:var(--serif)}
+.score span{font-size:64px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.score small{font-size:20px;color:var(--muted)}
+.res{display:flex;flex-direction:column;gap:8px}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;min-height:44px;border:0;background:var(--surface);font-weight:500;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.rvs{border-bottom:1px solid var(--line)}
+.rvs li{border-top:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;display:flex;gap:12px;align-items:flex-start;padding:14px 0}
+summary::-webkit-details-marker{display:none}
+.rn2{flex:none;width:26px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.rq{flex:1;min-width:0;font-family:var(--serif);overflow-wrap:anywhere}
+.pill{flex:none;font-size:13px;font-weight:600;border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.det{padding:0 0 18px 38px;display:flex;flex-direction:column;gap:12px}
+.det .lab{margin-bottom:4px}
+.fl{display:flex;flex-direction:column;gap:4px}
+.fl.ol{list-style:decimal;padding-left:22px}
+.none{color:var(--muted);font-style:italic}
+.why{color:var(--muted);font-size:15px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div id="app" class="wrap"></div>
+
+<script>
+(function(){
+var Q=[
+{t:"single",q:"Когда и где стали впервые возникать специальные этические комитеты?",
+ o:["в 60-е гг. в Англии","в 50-е гг. в США","в 50-е гг. в Англии","в 60-е гг. в США"],a:3,
+ why:"Первые этические комитеты появились в 1960-х гг. в США, например комитет по отбору пациентов для гемодиализа в Сиэтле (1962)."},
+{t:"single",q:"Кто стал разрабатывать медицинскую деонтологию как учение об обязанностях медицинских работников?",
+ o:["Н. Н. Петров","В. А. Манассеин","М. Я. Мудров","С. П. Боткин"],a:0,
+ why:"Деонтологию как учение об обязанностях медицинских работников в России разрабатывал Н. Н. Петров («Вопросы хирургической деонтологии», 1944)."},
+{t:"single",q:"Кто из ученых представил понимание задач биоэтики как области знаний, призванной установить взаимодействие между этикой и медициной?",
+ o:["Поттер","Хеллегерс","Персиваль","Грегори"],a:1,
+ why:"А. Хеллегерс понимал биоэтику как область знаний о взаимодействии этики и медицины. В. Р. Поттер видел в ней мост между науками о жизни и этикой."},
+{t:"single",q:"В каком году был принят Нюрнбергский кодекс?",
+ o:["1948","1946","1947","1949"],a:2,
+ why:"Нюрнбергский кодекс сформулирован в 1947 г. в приговоре Нюрнбергского процесса над врачами нацистской Германии."},
+{t:"single",q:"Мораль отличается следующей особенностью:",
+ o:["ее предписания неофициальны и ее санкции неформальны","нарушение моральных норм влечет юридическую ответственность","ее предписания закреплены законом","приоритет юридических норм над нравственными"],a:0,
+ why:"Моральные предписания неофициальны, а санкции (осуждение, общественное мнение, совесть) неформальны. Правовые нормы закреплены законом и обеспечиваются государством."},
+{t:"single",q:"При каком подходе источником нравственности является Бог?",
+ o:["Антропологическом","Социологическом","Натуралистическом","Креационистском"],a:3,
+ why:"Креационистский подход видит источник нравственности в Боге, в божественном откровении."},
+{t:"single",q:"Какой подход выводит мораль из природного фактора?",
+ o:["Антропологический","Социологический","Натуралистический","Креационистский"],a:2,
+ why:"Натуралистический подход выводит мораль из природных факторов: биологической природы человека, инстинктов."},
+{t:"match",q:"Установите соответствие между авторами и их произведениями:",
+ lt:"Авторы",rt:"Произведения",
+ l:["Гиппократ","М. Маймонид","В. Р. Поттер","Ф. Бэкон","Т. Персиваль"],
+ r:["«Клятва»","«О достоинстве и приумножении наук»","«Молитва врача»","«Биоэтика – мост в будущее»","«Медицинская этика»"],
+ a:[0,2,3,1,4],
+ why:"Гиппократ — «Клятва», Маймонид — «Молитва врача», Поттер — «Биоэтика – мост в будущее», Бэкон — «О достоинстве и приумножении наук», Персиваль — «Медицинская этика»."},
+{t:"order",q:"Установите правильную хронологическую последовательность принятия международных документов, касающихся вопросов биоэтики:",
+ o:["Женевская декларация","Конвенция Совета Европы «О правах человека и биомедицине»","Хельсинкская декларация","Нюрнбергский кодекс","Всеобщая декларация о биоэтике и правах человека"],
+ a:[3,0,2,1,4],
+ why:"Нюрнбергский кодекс — 1947, Женевская декларация — 1948, Хельсинкская декларация — 1964, Конвенция Совета Европы «О правах человека и биомедицине» — 1997, Всеобщая декларация о биоэтике и правах человека — 2005."},
+{t:"single",q:"Кто из ученых в 1970–1971 гг. ввел в научный оборот термин «биоэтика»?",
+ o:["Г. Бичер","Т. Бошан","В. Р. Поттер","Дж. Чилдресс"],a:2,
+ why:"Термин «биоэтика» в научный оборот ввел американский биохимик В. Р. Поттер. Еще в 1927 г. слово «Bio-Ethik» использовал немецкий пастор Ф. Яр."},
+{t:"single",q:"Кто является авторами книги «Принципы биомедицинской этики» (1979), в которой сформулированы основные принципы биоэтики?",
+ o:["В. Р. Поттер и А. Хеллегерс","Н. Н. Петров и М. Я. Мудров","Гиппократ и Гален","Т. Бошан и Дж. Чилдресс"],a:3,
+ why:"Т. Бошан и Дж. Чилдресс сформулировали четыре принципа: автономии, непричинения вреда, благодеяния и справедливости."},
+{t:"single",q:"Какой принцип биоэтики выражается формулой «не навреди»?",
+ o:["принцип автономии","принцип непричинения вреда","принцип благодеяния","принцип справедливости"],a:1,
+ why:"Формула «не навреди» (лат. primum non nocere) выражает принцип непричинения вреда."},
+{t:"single",q:"Принцип автономии пациента означает:",
+ o:["право пациента самостоятельно решать вопросы своего лечения после получения полной информации","право врача принимать решения о лечении без учета мнения пациента","приоритет интересов общества над интересами пациента","обязанность врача обеспечить всем равный доступ к медицинской помощи"],a:0,
+ why:"Автономия означает уважение права пациента самостоятельно принимать решения о своем лечении на основе информированного согласия."},
+{t:"single",q:"Какой документ Всемирной медицинской ассоциации определяет этические принципы проведения медицинских исследований с участием человека?",
+ o:["Нюрнбергский кодекс","Женевская декларация","Хельсинкская декларация","Конвенция Совета Европы «О правах человека и биомедицине»"],a:2,
+ why:"Хельсинкская декларация Всемирной медицинской ассоциации принята в 1964 г. Нюрнбергский кодекс создан по итогам процесса над врачами, а Конвенция принята Советом Европы."},
+{t:"single",q:"Какую клятву, согласно Федеральному закону «Об основах охраны здоровья граждан в Российской Федерации», дают лица, получившие диплом о высшем медицинском образовании?",
+ o:["Клятва Гиппократа","Клятва врача","Молитва врача","Женевская декларация"],a:1,
+ why:"Статья 71 Федерального закона № 323-ФЗ называется «Клятва врача»."},
+{t:"single",q:"Что означает принцип конфиденциальности (врачебная тайна)?",
+ o:["обязанность врача сообщать диагноз работодателю пациента","право врача публиковать сведения из историй болезни без согласия пациента","обязанность врача сообщать диагноз всем родственникам пациента","запрет разглашать сведения о факте обращения за помощью, состоянии здоровья и диагнозе без согласия пациента, кроме случаев, установленных законом"],a:3,
+ why:"Врачебная тайна охватывает сведения о факте обращения за медицинской помощью, состоянии здоровья и диагнозе. Разглашать их без согласия пациента можно только в случаях, установленных законом."},
+{t:"match",q:"Установите соответствие между понятиями и их определениями:",
+ lt:"Понятия",rt:"Определения",
+ l:["Деонтология","Эвтаназия","Паллиативная помощь","Информированное согласие","Врачебная тайна"],
+ r:["Комплекс мер по облегчению страданий неизлечимо больных и повышению качества их жизни","Сведения о факте обращения за помощью, состоянии здоровья и диагнозе пациента, не подлежащие разглашению","Учение о долге и профессиональных обязанностях медицинских работников","Добровольное согласие пациента на медицинское вмешательство после получения полной информации о нем","Намеренное ускорение смерти неизлечимо больного по его просьбе ради прекращения страданий"],
+ a:[2,4,0,3,1],
+ why:"Деонтология — учение о долге медицинских работников (3). Эвтаназия — намеренное ускорение смерти по просьбе больного (5). Паллиативная помощь — облегчение страданий неизлечимо больных (1). Информированное согласие — добровольное согласие после получения информации (4). Врачебная тайна — сведения, не подлежащие разглашению (2)."},
+{t:"order",q:"Установите правильную хронологическую последовательность появления произведений и документов, значимых для медицинской этики:",
+ o:["«Биоэтика – мост в будущее» В. Р. Поттера","«Медицинская этика» Т. Персиваля","«Клятва» Гиппократа","Нюрнбергский кодекс","«О достоинстве и приумножении наук» Ф. Бэкона"],
+ a:[2,4,1,3,0],
+ why:"«Клятва» Гиппократа — V–IV вв. до н. э., «О достоинстве и приумножении наук» Ф. Бэкона — 1623, «Медицинская этика» Т. Персиваля — 1803, Нюрнбергский кодекс — 1947, «Биоэтика – мост в будущее» В. Р. Поттера — 1971."},
+{t:"single",q:"Какая модель взаимоотношений врача и пациента основана на приоритете решений врача, когда пациент выступает исполнителем назначений?",
+ o:["информационная","контрактная","патерналистская","коллегиальная"],a:2,
+ why:"При патерналистской модели решения принимает врач, исходя из того, что он лучше знает, что полезно пациенту."},
+{t:"single",q:"Какой подход выводит мораль из общественных отношений и потребностей общества?",
+ o:["Антропологический","Социологический","Натуралистический","Креационистский"],a:1,
+ why:"Социологический подход выводит мораль из общественных отношений, из социальных факторов."}
+];
+
+var TYPE={single:"Один ответ",match:"Соответствие",order:"Последовательность"};
+var view="start",cur=0,onlyWrong=false;
+function blank(q){return q.t==="match"?q.l.map(function(){return null}):q.t==="order"?[]:null}
+var ans=Q.map(blank);
+var app=document.getElementById("app");
+
+function done(i){
+  var q=Q[i],a=ans[i];
+  if(q.t==="single")return a!==null;
+  if(q.t==="match")return a.every(function(x){return x!==null});
+  return a.length===q.o.length;
+}
+function ok(i){
+  var q=Q[i],a=ans[i];
+  if(q.t==="single")return a===q.a;
+  if(!done(i))return false;
+  return a.every(function(x,k){return x===q.a[k]});
+}
+function fmt(q,a){
+  if(q.t==="single")return a===null?'<span class="none">нет ответа</span>':'<span>'+(a+1)+'. '+q.o[a]+'</span>';
+  if(q.t==="match")return '<ul class="fl">'+q.l.map(function(l,k){
+    return '<li>'+l+' — '+(a[k]===null?'<span class="none">не выбрано</span>':(a[k]+1)+'. '+q.r[a[k]])+'</li>';
+  }).join("")+'</ul>';
+  if(!a.length)return '<span class="none">нет ответа</span>';
+  return '<ol class="fl ol">'+a.map(function(x){return '<li>'+q.o[x]+'</li>'}).join("")+'</ol>';
+}
+
+function head(){
+  return '<div class="top"><span class="brand">Биоэтика</span>'+
+    (view==="q"?'<button class="linkbtn" data-act="overview">Все задания</button>':'')+'</div>';
+}
+function bar(){
+  return '<div class="bar" aria-hidden="true">'+Q.map(function(_,i){
+    return '<i class="'+(done(i)?'on':'')+(view==="q"&&i===cur?' cur':'')+'"></i>';
+  }).join("")+'</div>';
+}
+
+function startView(){
+  var n={single:0,match:0,order:0};
+  Q.forEach(function(q){n[q.t]++});
+  return '<div class="hero">'+
+    '<p class="eyebrow">Медицинская этика и биоэтика</p>'+
+    '<h1>Тест по биоэтике</h1>'+
+    '<p class="lead">За каждое верно выполненное задание начисляется один балл. Время не ограничено, к любому заданию можно вернуться.</p>'+
+    '<div class="facts">'+
+      '<div class="fact"><b>'+n.single+'</b><span>с выбором ответа</span></div>'+
+      '<div class="fact"><b>'+n.match+'</b><span>на соответствие</span></div>'+
+      '<div class="fact"><b>'+n.order+'</b><span>на хронологию</span></div>'+
+    '</div>'+
+    '<p class="muted">Темы: этические комитеты, деонтология, Нюрнбергский кодекс и Хельсинкская декларация, принципы Бошана и Чилдресса, врачебная тайна, модели отношений врача и пациента.</p>'+
+    '<button class="btn primary" data-act="start" style="flex:none">Начать тест</button>'+
+  '</div>';
+}
+
+function qView(){
+  var q=Q[cur],a=ans[cur],body="";
+  if(q.t==="single"){
+    body='<ul class="opts">'+q.o.map(function(t,i){
+      return '<li><button class="opt" data-act="sel" data-i="'+i+'" data-k="o'+i+'" aria-pressed="'+(a===i)+'"><span class="num">'+(i+1)+'</span><span class="txt">'+t+'</span></button></li>';
+    }).join("")+'</ul>';
+  }else if(q.t==="match"){
+    body='<div class="blk"><h3 class="lab">'+q.lt+'</h3><ul class="pairs">'+q.l.map(function(t,k){
+      return '<li class="pair'+(a[k]!==null?' set':'')+'"><span class="who">'+t+'</span>'+
+        '<select data-l="'+k+'" data-k="s'+k+'" aria-label="'+t+': номер из списка «'+q.rt+'»"><option value="">—</option>'+
+        q.r.map(function(_,j){return '<option value="'+j+'"'+(a[k]===j?' selected':'')+'>'+(j+1)+'</option>'}).join("")+
+        '</select></li>';
+    }).join("")+'</ul></div>'+
+    '<div class="blk"><h3 class="lab">'+q.rt+'</h3><ol class="ref">'+q.r.map(function(t,j){
+      return '<li><span class="rn">'+(j+1)+'</span><span>'+t+'</span></li>';
+    }).join("")+'</ol></div>';
+  }else{
+    body='<p class="hint">Нажимайте на пункты по порядку: от самого раннего к самому позднему.</p>'+
+    '<ul class="opts">'+q.o.map(function(t,i){
+      var p=a.indexOf(i);
+      return '<li><button class="opt" data-act="ord" data-i="'+i+'" data-k="o'+i+'" aria-pressed="'+(p>=0)+'"><span class="num">'+(p>=0?p+1:'')+'</span><span class="txt">'+t+'</span></button></li>';
+    }).join("")+'</ul>'+
+    '<button class="linkbtn" data-act="resetord">Сбросить порядок</button>';
+  }
+  var last=cur===Q.length-1;
+  return head()+bar()+
+    '<div class="qhead"><span class="kicker">Задание '+(cur+1)+' из '+Q.length+'</span><span class="tag">'+TYPE[q.t]+'</span></div>'+
+    '<h2 class="stem" id="stem" tabindex="-1">'+q.q+'</h2>'+body+
+    '<div class="nav"><button class="btn" data-act="prev"'+(cur===0?' disabled':'')+'>Назад</button>'+
+    '<button class="btn primary" data-act="next">'+(last?'К обзору':'Далее')+'</button></div>';
+}
+
+function ovView(){
+  var n=0,miss=[];
+  Q.forEach(function(_,i){if(done(i))n++;else miss.push(i+1)});
+  return head()+bar()+
+    '<h2 class="stem" id="stem" tabindex="-1">Обзор ответов</h2>'+
+    '<p class="muted">Отвечено '+n+' из '+Q.length+'.'+(miss.length?' Без ответа: '+miss.join(", ")+'.':' Можно завершать.')+'</p>'+
+    '<div class="grid">'+Q.map(function(_,i){
+      return '<button class="cell'+(done(i)?' done':'')+'" data-act="goto" data-i="'+i+'" aria-label="Задание '+(i+1)+(done(i)?', есть ответ':', нет ответа')+'">'+(i+1)+'</button>';
+    }).join("")+'</div>'+
+    '<div class="nav"><button class="btn" data-act="goto" data-i="'+cur+'">Вернуться</button>'+
+    '<button class="btn primary" data-act="finish">Завершить тест</button></div>';
+}
+
+function resView(){
+  var sc=0;
+  Q.forEach(function(_,i){if(ok(i))sc++});
+  var pct=Math.round(sc/Q.length*100);
+  var idx=[];
+  Q.forEach(function(_,i){if(!onlyWrong||!ok(i))idx.push(i)});
+  var list=idx.length?'<ul class="rvs">'+idx.map(function(i){
+    var q=Q[i],g=ok(i);
+    return '<li><details'+(onlyWrong?' open':'')+'><summary><span class="rn2">'+(i+1)+'</span><span class="rq">'+q.q+'</span><span class="pill '+(g?'ok':'bad')+'">'+(g?'Верно':'Неверно')+'</span></summary>'+
+      '<div class="det"><div><p class="lab">Ваш ответ</p>'+fmt(q,ans[i])+'</div>'+
+      (g?'':'<div><p class="lab">Правильный ответ</p>'+fmt(q,q.a)+'</div>')+
+      '<p class="why">'+q.why+'</p></div></details></li>';
+  }).join("")+'</ul>':'<p class="muted">Ошибок нет.</p>';
+  return head()+
+    '<div class="res"><p class="kicker">Результат</p><p class="score"><span>'+sc+'</span><small>из '+Q.length+'</small></p><p class="muted">Верно выполнено '+pct+'% заданий.</p></div>'+
+    '<div class="bar" aria-hidden="true">'+Q.map(function(_,i){return '<i class="'+(ok(i)?'ok':'bad')+'"></i>'}).join("")+'</div>'+
+    '<div class="seg"><button data-act="all" aria-pressed="'+(!onlyWrong)+'">Все задания</button><button data-act="wrong" aria-pressed="'+onlyWrong+'">Только ошибки ('+(Q.length-sc)+')</button></div>'+
+    list+
+    '<button class="btn primary" data-act="restart" style="flex:none">Пройти заново</button>';
+}
+
+function render(top){
+  var f=document.activeElement,k=f&&f.dataset?f.dataset.k:null;
+  app.innerHTML=view==="start"?startView():view==="q"?qView():view==="ov"?ovView():resView();
+  if(top){
+    window.scrollTo(0,0);
+    var s=document.getElementById("stem");
+    if(s)s.focus({preventScroll:true});
+  }else if(k){
+    var el=app.querySelector('[data-k="'+k+'"]');
+    if(el)el.focus({preventScroll:true});
+  }
+}
+function go(){render(true)}
+
+app.addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");
+  if(!b||b.disabled)return;
+  var act=b.dataset.act,i=+b.dataset.i;
+  if(act==="start"){view="q";cur=0;go()}
+  else if(act==="prev"){cur=Math.max(0,cur-1);go()}
+  else if(act==="next"){if(cur<Q.length-1){cur++}else{view="ov"}go()}
+  else if(act==="overview"){view="ov";go()}
+  else if(act==="goto"){view="q";cur=i;go()}
+  else if(act==="sel"){ans[cur]=i;render()}
+  else if(act==="ord"){var a=ans[cur],p=a.indexOf(i);if(p>=0)a.splice(p,1);else a.push(i);render()}
+  else if(act==="resetord"){ans[cur]=[];render()}
+  else if(act==="finish"){view="res";onlyWrong=false;go()}
+  else if(act==="all"){onlyWrong=false;render()}
+  else if(act==="wrong"){onlyWrong=true;render()}
+  else if(act==="restart"){Q.forEach(function(q,n){ans[n]=blank(q)});view="start";cur=0;onlyWrong=false;go()}
+});
+app.addEventListener("change",function(e){
+  var s=e.target.closest("select[data-l]");
+  if(!s)return;
+  ans[cur][+s.dataset.l]=s.value===""?null:+s.value;
+  render();
+});
+render();
+})();
+</script>
+</body>
+</html>
